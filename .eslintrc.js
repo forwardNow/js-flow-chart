@@ -1,10 +1,10 @@
 module.exports = {
-    // "env": {
-    //   "browser": true,
-    //   "commonjs": true,
-    //   "es6": true,
-    //   "node": true
-    // },
+    "env": {
+      "browser": true,
+      "commonjs": true,
+      "es6": true,
+      "node": true
+    },
 
     extends: [
         'airbnb',
@@ -18,13 +18,13 @@ module.exports = {
         // "html",
     ],
 
-    "settings": {
-        "import/resolver": {
-            "webpack":{
-                "config": "webpack.config.js"
-            }
-        }
-    },
+    // "settings": {
+    //     "import/resolver": {
+    //         "webpack":{
+    //             "config": "webpack.config.js"
+    //         }
+    //     }
+    // },
 
     "rules": {
         // 类方法里需要 this

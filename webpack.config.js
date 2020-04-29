@@ -1,8 +1,17 @@
-import path from 'path';
-import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+const path = require('path');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
 
-export default {
+module.exports = {
   mode: 'development', // "production" | "development"
+
+  devServer: {
+    contentBase: path.join(__dirname, 'dist'),
+    port: 8080,
+    hot: true,
+    open: true,
+  },
 
   entry: './src/main.js',
   output: {
@@ -23,19 +32,28 @@ export default {
       filename: '[name].css',
       chunkFilename: '[id].css',
     }),
+    new HtmlWebpackPlugin({
+      filename: 'index.html',
+      template: './src/index.html',
+    }),
+    new webpack.HotModuleReplacementPlugin(),
   ],
+
+  externals: {
+    jquery: 'window.jQuery',
+  },
 };
 
 function getCssLoaders() {
   return [
-    {
-      loader: MiniCssExtractPlugin.loader,
-      options: {
-        // publicPath: '../',
-      },
-    },
-    {
-      loader: 'css-loader',
-    },
+    // {
+    //   loader: MiniCssExtractPlugin.loader,
+    //   options: {
+    //     // publicPath: '../',
+    //   },
+    // },
+    'style-loader',
+    'css-loader',
+    'postcss-loader',
   ];
 }
