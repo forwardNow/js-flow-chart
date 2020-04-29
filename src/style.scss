@@ -13,6 +13,10 @@
 .flow-chart__widgets {
   width: 200px;
   border-right: solid 1px #eee;
+
+  .fc-widget {
+    margin: 20px auto;
+  }
 }
 .flow-chart__stage {
   flex: 1;
@@ -21,6 +25,7 @@
 .fc-widget {
   width: 120px;
   height: 40px;
+  padding: 8px;
   color: #fff;
   background-color: rgb(91, 155, 213);
   border: solid 1px rgb(65, 113, 156);
