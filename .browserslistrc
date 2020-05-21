@@ -1,0 +1,8 @@
+# Browsers that we support
+
+defaults
+not ie < 9
+last 2 versions
+> 1%
+iOS >= 7
+Android >= 4.0

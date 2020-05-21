@@ -13,7 +13,7 @@ module.exports = {
     open: true,
   },
 
-  entry: './src/main.js',
+  entry: './src/tree.js',
   output: {
     filename: '[name].js',
     path: path.join(__dirname, './dist'),

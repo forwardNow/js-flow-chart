@@ -1,0 +1,18 @@
+.node {
+  position: absolute;
+  background-color: #0000cc;
+  color: #ffffff;
+  font-size: 12px;
+  font-family: sans-serif;
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid #000088;
+}
+
+.dot {
+  position: absolute;
+  background-color: black;
+  width: 1px;
+  height: 1px;
+  overflow:hidden;
+}

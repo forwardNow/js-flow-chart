@@ -1,151 +1,154 @@
-import { jsPlumb } from 'jsplumb/dist/js/jsplumb.min';
-import 'jsplumb/css/jsplumbtoolkit-defaults.css';
-import { v4 as uuidv4 } from 'uuid';
+import './common/style/tree.scss';
+import keyBy from 'lodash.keyby';
 
-import './common/lib/jquery-ui/jquery-ui.min';
-
-import './style.scss';
-
-const $ = window.jQuery;
-
-// this is the paint style for the connecting lines..
-const connectorPaintStyle = {
-  strokeWidth: 2,
-  stroke: '#61B7CF',
-  joinstyle: 'round',
-  outlineStroke: 'transparent',
-  outlineWidth: 2,
-};
-// .. and this is the hover style.
-const connectorHoverStyle = {
-  strokeWidth: 3,
-  stroke: '#216477',
-  outlineWidth: 5,
-  outlineStroke: 'white',
-};
-const endpointHoverStyle = {
-  fill: '#216477',
-  stroke: '#216477',
-};
-// the definition of source endpoints (the small blue ones)
-const sourceEndpoint = {
-  endpoint: 'Dot',
-  paintStyle: {
-    stroke: '#7AB02C',
-    fill: 'transparent',
-    radius: 7,
-    strokeWidth: 1,
-  },
-  isSource: true,
-  connector: ['Flowchart', {
-    stub: [40, 60], gap: 10, cornerRadius: 5, alwaysRespectStubs: true,
-  }],
-  connectorStyle: connectorPaintStyle,
-  hoverPaintStyle: endpointHoverStyle,
-  connectorHoverStyle,
-  maxConnections: 100,
-  dragOptions: {},
-  overlays: [
-    ['Label', {
-      location: [0.5, 1.5],
-      label: 'Drag',
-      cssClass: 'endpointSourceLabel',
-      visible: false,
-    }],
-  ],
-};
-// the definition of target endpoints (will appear when the user drags a connection)
-const targetEndpoint = {
-  endpoint: 'Dot',
-  paintStyle: { fill: '#7AB02C', radius: 7 },
-  hoverPaintStyle: endpointHoverStyle,
-  maxConnections: 100,
-  dropOptions: { hoverClass: 'hover', activeClass: 'active' },
-  isTarget: true,
-  overlays: [
-    ['Label', {
-      location: [0.5, -0.5],
-      label: 'Drop',
-      cssClass: 'endpointTargetLabel',
-      visible: false,
-    }],
-  ],
-};
-
-class FlowChart {
-  constructor(id, option = {}) {
-    this.$el = $(id);
-    this.$stage = this.$el.find('.flow-chart__stage');
-
-    this.jsPlumbIns = jsPlumb.getInstance({
-      ConnectionsDetachable: false,
-      ConnectionOverlays: [
-        ['Arrow', {
-          location: 1,
-          visible: true,
-          width: 11,
-          length: 11,
-          id: 'ARROW',
-          events: {
-            click() {
-              console.log('you clicked on the arrow overlay');
-            },
-          },
-        }],
-      ],
-    });
-
-    this.jsPlumbIns.importDefaults({
-      Connector: ['Bezier', { curviness: 150 }],
-      Anchors: ['LeftCenter', 'RightCenter'],
-    });
-
-    this.jsPlumbIns.bind('beforeDrop', ({ sourceId, targetId }) => sourceId !== targetId);
-  }
-
-  init() {
-    $('.fc-widget').draggable({
-      helper: 'clone',
-      appendTo: this.$stage,
-      containment: '.flow-chart',
-      stop: (event, ui) => {
-        const { helper } = ui;
-
-        const { top, left } = helper.position();
-
-        if (top < 0 || left < 0) {
-          return;
-        }
-
-        const $newNode = helper.clone();
-
-        this.initNode($newNode);
-      },
-    });
-  }
-
-  initNode($node) {
-    const uuid = uuidv4();
-    const id = `id-${uuid}`;
-    const sourceUUID = `sourceUUID-${uuid}`;
-    const targetUUID = `targetUUID-${uuid}`;
-
-    $node.attr('id', id);
-
-    $node.appendTo(this.$stage);
-    this.jsPlumbIns.draggable($node, { grid: [5, 5] });
-
-    this.jsPlumbIns.addEndpoint($node, sourceEndpoint, {
-      anchor: 'RightMiddle', uuid: sourceUUID,
-    });
-    this.jsPlumbIns.addEndpoint($node, targetEndpoint, {
-      anchor: 'LeftMiddle', uuid: targetUUID,
-    });
+// Draw a line between two points.  Slow but sure...
+function drawLine(x0, y0, x1, y1) {
+  const dx = x1 - x0;
+  const dy = y1 - y0;
+  let x = x0;
+  let y = y0;
+  if (Math.abs(dx) > Math.abs(dy)) {
+    const yinc = dy / dx;
+    if (dx < 0) {
+      while (x >= x1) {
+        createDot(x, y);
+        x -= 1;
+        y -= yinc;
+      }
+    } else {
+      while (x <= x1) {
+        createDot(x, y);
+        x += 1;
+        y += yinc;
+      }
+    }
+  } else {
+    const xinc = dx / dy;
+    if (dy < 0) {
+      while (y >= y1) {
+        createDot(x, y);
+        y -= 1;
+        x -= xinc;
+      }
+    } else {
+      while (y <= y1) {
+        createDot(x, y);
+        y += 1;
+        x += xinc;
+      }
+    }
   }
 }
 
-window.FlowChart = FlowChart;
+function createDot(x, y) {
+  const newDot = document.createElement('div');
+  newDot.style.left = `${x}px`;
+  newDot.style.top = `${y}px`;
+  newDot.classList.add('dot');
+  document.body.appendChild(newDot);
+}
 
-const fc = new FlowChart('#flowChart');
+function createNode(label, x, y, size = 20) {
+  const halfSize = size / 2;
+  const newNode = document.createElement('div');
 
-fc.init();
+  const style = {
+    left: `${x - halfSize}px`,
+    top: `${y - halfSize}px`,
+  };
+
+  newNode.innerHTML = label;
+
+  newNode.classList.add('node');
+
+  Object.getOwnPropertyNames(style).forEach((key) => {
+    newNode.style[key] = style[key];
+  });
+
+  document.body.appendChild(newNode);
+}
+
+class Tree {
+  constructor(label, children) {
+    this.label = label;
+    this.children = children;
+
+    this.offset = 0;
+    this.x = 0;
+    this.y = 0;
+  }
+
+  isLeaf() {
+    return this.children.length === 0;
+  }
+}
+
+
+const treeData = {
+  label: '3',
+  children: [
+    { label: '1', children: [] },
+    { label: '2', children: [] },
+  ],
+};
+
+const nodeMeta = {
+  width: 20,
+  height: 20,
+  gap: {
+    y: 16,
+    x: 16,
+  },
+};
+
+function traverseTree(node, depth) {
+  node.children.forEach((child, index) => {
+    if (child.children.length === 0) {
+      console.log('leaf:', child.label);
+      const childX = (nodeMeta.width + nodeMeta.gap.x) * (index + 1);
+      const childY = (depth + 1) * (nodeMeta.height + nodeMeta.gap.y);
+      createNode(child.label, childX, childY);
+      return;
+    }
+    traverseTree(child, depth + 1);
+  });
+
+  console.log('parent:', node.label);
+  const parentX = nodeMeta.width + nodeMeta.gap.x;
+  const parentY = nodeMeta.height + nodeMeta.gap.y;
+  createNode(node.label, parentX, parentY);
+}
+
+traverseTree(treeData, 1);
+
+/*
+
+
+let count = 0;
+function generateRandomTree(depth, minChildrenNum) {
+  let randomChildrenNum = (depth <= 1 || Math.random() < 0.5) ? 0 : Math.round(Math.random() * 4);
+  if (minChildrenNum) {
+    randomChildrenNum = Math.max(randomChildrenNum, minChildrenNum);
+  }
+  const children = [];
+  for (let i = 0; i < randomChildrenNum; i += 1) {
+    children.push(generateRandomTree(depth - 1, minChildrenNum - 1));
+  }
+  count += 1;
+  return new Tree(count, children);
+}
+
+const testTree = generateRandomTree(10, 2);
+console.log(count, testTree);
+
+
+function createElement(label) {
+  const elt = document.createElement('div');
+  elt.classList.add('node');
+  elt.innerHTML = label;
+  document.body.appendChild(elt);
+}
+
+
+// traverseTree(testTree);
+*/

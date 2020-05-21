@@ -6,11 +6,6 @@
   "scripts": {
     "dev": "webpack-dev-server"
   },
-  "browserslist": [
-    "last 1 version",
-    "> 1%",
-    "ie > 10"
-  ],
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -41,6 +36,7 @@
   },
   "dependencies": {
     "jsplumb": "^2.13.1",
+    "lodash.keyby": "^4.6.0",
     "uuid": "^7.0.3",
     "vue": "^2.6.11"
   }
